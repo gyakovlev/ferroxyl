@@ -8,9 +8,12 @@ import re
 import shlex
 import subprocess
 
-PKG_PATH = "/var/db/pkg"
+PKG_PATH = "/var/db/repos/gentoo"
 
 #if not os.path.exists(PKG_PATH):
+
+#vartree = portage.db[portage.root]["vartree"]
+#d = vartree.dbapi._aux_env_search("x11-terms/alacritty-0.8.0", "CRATES")
 
 def find_ebuilds(pkg_path):
     ebuilds = []
@@ -33,7 +36,12 @@ def parse_crates(ebuilds):
     ebuild_crates = {}
     for ebuild in ebuilds:
         with open(ebuild, 'r') as f:
-            for line in shlex.split(f.read()):
+            try:
+                lines = shlex.split(f.read())
+            except ValueError:
+                print(ebuild + ": failed to parse")
+
+            for line in lines:
                 var, eq, value = line.partition('=')
                 if eq:
                     if var == "CRATES":
