@@ -90,7 +90,7 @@ def scan_locks():
                 os.symlink(lock, "Cargo.lock")
             else:
                 raise e
-        audit = subprocess.call(["cargo", "audit", "--no-fetch", "--db", "/tmp/ferroxyl-audit-db"]) 
+        audit = subprocess.call(["cargo", "audit", "--no-fetch", "--db", AUDIT_DB_DIR]) 
         print("\n")
 
 
