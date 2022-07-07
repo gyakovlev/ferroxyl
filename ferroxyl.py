@@ -6,6 +6,7 @@ import json
 import os
 import re
 import shlex
+import shutil
 import subprocess
 
 PKG_PATH = "/var/db/repos/gentoo"
@@ -71,6 +72,9 @@ def create_fake_locks(dict):
 
 
 def scan_locks():
+    dir_path = '/tmp/ferroxyl-audit-db'
+    # pre-fetch db
+    update_db = subprocess.call(["cargo", "audit", "--db", dir_path])
     for lock in glob.glob("Cargo.lock-*"):
         print('\033[1m' + '\033[96m' + "***Checking " + lock + '\033[0m')
         try:
@@ -81,9 +85,14 @@ def scan_locks():
                 os.symlink(lock, "Cargo.lock")
             else:
                 raise e
-        audit = subprocess.call(["cargo", "audit"]) 
+        audit = subprocess.call(["cargo", "audit", "--no-fetch", "--db", "/tmp/ferroxyl-audit-db"]) 
         print("\n")
-        
+    try:
+            shutil.rmtree(dir_path)
+    except OSError as e:
+        print("Error: %s : %s" % (dir_path, e.strerror))
+
+
 all_ebuilds = find_ebuilds(PKG_PATH)
 ebuilds_with_crates = find_CRATED(all_ebuilds)
 crates = parse_crates(ebuilds_with_crates)
