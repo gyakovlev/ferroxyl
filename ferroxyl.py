@@ -9,6 +9,7 @@ import shlex
 import shutil
 import subprocess
 
+AUDIT_DB_DIR = "/tmp/ferroxyl-audit-db"
 PKG_PATH = "/var/db/repos/gentoo"
 
 #if not os.path.exists(PKG_PATH):
@@ -72,9 +73,9 @@ def create_fake_locks(dict):
 
 
 def scan_locks():
-    dir_path = '/tmp/ferroxyl-audit-db'
     # pre-fetch db
-    update_db = subprocess.call(["cargo", "audit", "--db", dir_path])
+    print('\033[1m' + '\033[96m' + "***Fetching db to " + AUDIT_DB_DIR + '\033[0m')
+    update_db = subprocess.call(["cargo", "audit", "--db", AUDIT_DB_DIR])
     for lock in glob.glob("Cargo.lock-*"):
         print('\033[1m' + '\033[96m' + "***Checking " + lock + '\033[0m')
         try:
@@ -87,10 +88,20 @@ def scan_locks():
                 raise e
         audit = subprocess.call(["cargo", "audit", "--no-fetch", "--db", "/tmp/ferroxyl-audit-db"]) 
         print("\n")
+
+
+def cleanup():
+    print('\033[1m' + '\033[96m' + "***Cleaning up" + '\033[0m')
     try:
-            shutil.rmtree(dir_path)
+        shutil.rmtree(AUDIT_DB_DIR)
     except OSError as e:
-        print("Error: %s : %s" % (dir_path, e.strerror))
+        print("Error: %s : %s" % (AUDIT_DB_DIR, e.strerror))
+
+    for lock in glob.glob("Cargo.lock*"):
+        try:
+            os.remove(lock)
+        except OSError as e:
+            print("Error: %s : %s" % (lock, e.strerror))
 
 
 all_ebuilds = find_ebuilds(PKG_PATH)
@@ -98,5 +109,6 @@ ebuilds_with_crates = find_CRATED(all_ebuilds)
 crates = parse_crates(ebuilds_with_crates)
 create_fake_locks(crates)
 scan_locks()
+cleanup()
 #print(parse_crates(find_CRATED(find_ebuilds(PKG_PATH))))
                     
