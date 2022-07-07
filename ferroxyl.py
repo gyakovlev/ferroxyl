@@ -45,12 +45,13 @@ def parse_crates(ebuilds):
             except ValueError:
                 print(ebuild + ": failed to parse")
 
-            for line in lines:
-                var, eq, value = line.partition('=')
-                if eq:
-                    if var == "CRATES":
-                        ename = ebuild[len(PKG_PATH) + 1:] if ebuild.startswith(PKG_PATH) else ebuild
-                        ebuild_crates.update({ename: [ i for i in value.splitlines() if i]})
+            else:
+                for line in lines:
+                    var, eq, value = line.partition('=')
+                    if eq:
+                        if var == "CRATES":
+                            ename = ebuild[len(PKG_PATH) + 1:] if ebuild.startswith(PKG_PATH) else ebuild
+                            ebuild_crates.update({ename: [ i for i in value.splitlines() if i]})
     #return json.dumps(ebuild_crates, indent = 4) 
     return ebuild_crates
 
