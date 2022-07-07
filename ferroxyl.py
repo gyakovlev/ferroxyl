@@ -74,23 +74,18 @@ def create_fake_locks(dict):
             f.write("name = \"" + name + "\"\n")
             f.write("version = \"" + version + "\"\n")
 
-
-def scan_locks():
-    # pre-fetch db
+def refresh_db():
     print('\033[1m' + '\033[96m' + "***Fetching db to " + AUDIT_DB_DIR + '\033[0m')
     open("Cargo.lock", 'a').close()
     update_db = subprocess.call(["cargo", "audit", "--db", AUDIT_DB_DIR])
+    
+
+def scan_locks():
+    print('\033[1m' + '\033[96m' + "***Scanning for vulns" '\033[0m')
     for lock in glob.glob("Cargo.lock-*"):
-        print('\033[1m' + '\033[96m' + "***Checking " + lock + '\033[0m')
-        try:
-            os.symlink(lock, "Cargo.lock")
-        except OSError as e:
-            if e.errno == errno.EEXIST:
-                os.remove("Cargo.lock")
-                os.symlink(lock, "Cargo.lock")
-            else:
-                raise e
-        audit = subprocess.call(["cargo", "audit", "--no-fetch", "--db", AUDIT_DB_DIR]) 
+        print('\033[1m' + '\033[96m' + "***Scanning " + lock + '\033[0m')
+        audit = subprocess.call(["cargo", "audit", "--no-fetch",
+            "--db", AUDIT_DB_DIR, "--file", lock]) 
         print("\n")
 
 
@@ -111,7 +106,9 @@ def cleanup():
 all_ebuilds = find_ebuilds(PKG_PATH)
 ebuilds_with_crates = find_CRATED(all_ebuilds)
 crates = parse_crates(ebuilds_with_crates)
+cleanup()
 create_fake_locks(crates)
+refresh_db()
 scan_locks()
 cleanup()
 #print(parse_crates(find_CRATED(find_ebuilds(PKG_PATH))))
