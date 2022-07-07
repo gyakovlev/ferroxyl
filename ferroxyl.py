@@ -26,6 +26,7 @@ def find_ebuilds(pkg_path):
     return ebuilds
 
 def find_CRATED(ebuilds):
+    print('\033[1m' + '\033[96m' + "***Looking for ebuilds with CRATES " + '\033[0m')
     crated = []
     for ebuild in ebuilds:
         with open(ebuild, 'r') as f:
@@ -35,6 +36,7 @@ def find_CRATED(ebuilds):
     return crated
 
 def parse_crates(ebuilds):
+    print('\033[1m' + '\033[96m' + "***Parsing CRATES " + '\033[0m')
     ebuild_crates = {}
     for ebuild in ebuilds:
         with open(ebuild, 'r') as f:
@@ -53,6 +55,7 @@ def parse_crates(ebuilds):
     return ebuild_crates
 
 def create_fake_locks(dict):
+    print('\033[1m' + '\033[96m' + "***Creating fake locks " + '\033[0m')
     for k in dict:
         f = open("Cargo.lock-" + k.replace("/", "_"), 'w+')
         for dep in dict[k]:
@@ -75,6 +78,7 @@ def create_fake_locks(dict):
 def scan_locks():
     # pre-fetch db
     print('\033[1m' + '\033[96m' + "***Fetching db to " + AUDIT_DB_DIR + '\033[0m')
+    open("Cargo.lock", 'a').close()
     update_db = subprocess.call(["cargo", "audit", "--db", AUDIT_DB_DIR])
     for lock in glob.glob("Cargo.lock-*"):
         print('\033[1m' + '\033[96m' + "***Checking " + lock + '\033[0m')
